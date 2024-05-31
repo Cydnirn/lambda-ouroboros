@@ -46,7 +46,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: MyLambdaFunction
-      Handler: index.handler
+      Handler: testLambda.handler
       Runtime: nodejs20.x
       Role: !GetAtt LambdaRole.Arn
       Code:
