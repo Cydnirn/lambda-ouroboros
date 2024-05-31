@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a Lambda Function with a custom IAM role and policy
+
+Parameters:
+  lambdaFile:
+    Type: String
+  lambdaBucket:
+    Type: String
+  awsId:
+    Type: String
+  stackRegion:
+    Type: String
+
+Resources:
+  LambdaPolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      PolicyName: LambdaPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:*
+              - dynamodb:*
+            Resource: '*'
+          - Effect: Allow
+            Action: "logs:*"
+            Resource: !Sub "arn:aws:logs:${stackRegion}:${awsId}:*"
+      RoleName: !Ref LambdaRole
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: MyLambdaFunction
+      Handler: index.handler
+      Runtime: nodejs20.x
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        S3Bucket: !Ref lambdaBucket
+        S3Key: !Ref lambdaFile
