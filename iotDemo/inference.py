@@ -9,9 +9,18 @@ def model_fn(model_dir):
 
 def input_fn(request_body, request_content_type):
     if request_content_type == 'application/json':
-        input_data = pd.read_json(request_body)
-        return input_data
-    raise ValueError("Unsupported content type: {}".format(request_content_type))
+        print("RequestBody", request_body)
+        try:
+            data = pd.read_json(request_body)
+            if isinstance(data, pd.Series):
+                data = data.to_frame().T
+            print("Input data", data)
+            return data
+        except ValueError as e:
+            print("Error in parsing JSON:", e)
+            raise ValueError("Error in parsing JSON: {}".format(e))
+    else:
+        raise ValueError("Unsupported content type: {}".format(request_content_type))
 
 def predict_fn(input_data, model):
     predictions = model.predict(input_data)
